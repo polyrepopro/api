@@ -25,7 +25,7 @@ func ValidateStructFields(v interface{}, path string) ([]string, error) {
 		requiredTag := field.Tag.Get("required")
 		fieldPath := path + yamlTag
 
-		if field.Type.Kind() == reflect.Struct {
+		if field.Type.Kind() == reflect.Struct && (requiredTag == "" || requiredTag == "true") {
 			nestedEmpty, err := ValidateStructFields(fieldValue.Interface(), fieldPath+".")
 			if err != nil {
 				return nil, err

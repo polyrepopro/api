@@ -15,14 +15,14 @@ import (
 
 type Config struct {
 	Path       string      `yaml:"-"`
-	SyncedAt   time.Time   `yaml:"synced"`
-	Workspaces []Workspace `yaml:"workspaces"`
+	Synced     time.Time   `yaml:"synced" required:"false"`
+	Workspaces []Workspace `yaml:"workspaces" required:"false"`
 }
 
 type Workspace struct {
 	Name         string        `yaml:"name"`
 	Path         string        `yaml:"path"`
-	Repositories *[]Repository `yaml:"repositories"`
+	Repositories *[]Repository `yaml:"repositories" required:"false"`
 }
 
 type Repository struct {
@@ -33,8 +33,8 @@ type Repository struct {
 }
 
 type Auth struct {
-	Key string  `yaml:"key,omitempty"`
-	Env AuthEnv `yaml:"env,omitempty"`
+	Key string  `yaml:"key,omitempty" required:"false"`
+	Env AuthEnv `yaml:"env,omitempty" required:"false"`
 }
 
 type AuthEnv struct {
@@ -43,11 +43,6 @@ type AuthEnv struct {
 }
 
 func (c *Config) SaveConfig() error {
-	configPath := util.WalkFile(c.Path, 10)
-	if configPath == "" {
-		return fmt.Errorf("config not found in search paths")
-	}
-
 	var buf bytes.Buffer
 	encoder := yaml.NewEncoder(&buf)
 	encoder.SetIndent(2)
@@ -57,7 +52,7 @@ func (c *Config) SaveConfig() error {
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
 
-	return os.WriteFile(configPath, buf.Bytes(), 0644)
+	return os.WriteFile(c.Path, buf.Bytes(), 0644)
 }
 
 func (c *Config) GetWorkspace(name string) (*Workspace, error) {
