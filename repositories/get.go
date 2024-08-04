@@ -7,7 +7,7 @@ import (
 )
 
 func Get(path string) (config.Repository, error) {
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetRelativeConfig()
 	if err != nil {
 		return config.Repository{}, err
 	}

@@ -31,11 +31,12 @@ func Clone(args CloneArgs) error {
 	var auth transport.AuthMethod
 	var err error
 
-	if args.Auth == nil {
+	if args.Auth == nil && util.GetProtocol(args.URL) == "ssh" {
 		// Check if the default SSH key exists
-		if _, err := os.Stat(util.ExpandPath("~/.ssh/id_rsa")); err == nil {
+		defaultSSHKey := util.ExpandPath("~/.ssh/id_rsa")
+		if _, err := os.Stat(defaultSSHKey); err == nil {
 			// Default SSH key exists, use it
-			auth, err = ssh.NewPublicKeysFromFile("git", "/Users/matthewdavis/.ssh/id_rsa", "")
+			auth, err = ssh.NewPublicKeysFromFile("git", defaultSSHKey, "")
 			if err != nil {
 				multilog.Error("git.clone", "failed to create SSH auth with default key", map[string]interface{}{
 					"error": err,
@@ -45,10 +46,10 @@ func Clone(args CloneArgs) error {
 		} else {
 			// Default SSH key doesn't exist, proceed without auth
 			multilog.Warn("git.clone", "no auth provided and default SSH key not found", map[string]interface{}{
-				"path": "/Users/matthewdavis/.ssh/id_rsa",
+				"path": defaultSSHKey,
 			})
 		}
-	} else if args.Auth.Key != "" {
+	} else if args.Auth != nil && args.Auth.Key != "" {
 		auth, err = ssh.NewPublicKeysFromFile("git", args.Auth.Key, "")
 		if err != nil {
 			multilog.Fatal("git.clone", "failed to create SSH auth with provided key", map[string]interface{}{
@@ -56,7 +57,7 @@ func Clone(args CloneArgs) error {
 			})
 			return err
 		}
-	} else if args.Auth.Env.Username != "" && args.Auth.Env.Password != "" {
+	} else if args.Auth != nil && args.Auth.Env.Username != "" && args.Auth.Env.Password != "" {
 		auth = &http.BasicAuth{
 			Username: os.Getenv(args.Auth.Env.Username),
 			Password: os.Getenv(args.Auth.Env.Password),
@@ -68,12 +69,16 @@ func Clone(args CloneArgs) error {
 		"path": args.Path,
 	})
 
-	_, err = git.PlainClone(args.Path, false, &git.CloneOptions{
+	opts := &git.CloneOptions{
 		URL:               args.URL,
 		Progress:          &progress{},
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
-		Auth:              auth,
-	})
+	}
+
+	if auth != nil {
+		opts.Auth = auth
+	}
+	_, err = git.PlainClone(args.Path, false, opts)
 	if err != nil {
 		multilog.Fatal("git.clone", "failed to clone repository", map[string]interface{}{
 			"error": err,

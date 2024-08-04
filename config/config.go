@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -117,28 +118,46 @@ func (r *Repository) GetAbsolutePath() string {
 	return util.ExpandPath(r.Path)
 }
 
-// GetConfig returns a config hydrated by reading from .poly.yaml.
+func GetAbsoluteConfig(path string) (*Config, error) {
+	config := Config{}
+
+	err := cleanenv.ReadConfig(util.ExpandPath(path), &config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config: %w", err)
+	}
+
+	return &config, nil
+}
+
+// GetRelativeConfig returns a config hydrated by reading from .poly.yaml.
 // It will walk up the directory tree to find the nearest .poly.yaml file.
 //
 // Returns:
 //   - *Config: The hydratedconfig.
 //   - error: An error if the config could not be found.
-func GetConfig() (*Config, error) {
+func GetRelativeConfig() (*Config, error) {
 	var config *Config
 
-	configPath := util.WalkFile(".poly.yaml", 10)
-	if configPath != "" {
+	if os.Getenv("POLYREPO_CONFIG") != "" {
+		configPath := os.Getenv("POLYREPO_CONFIG")
 		config = &Config{}
 		cleanenv.ReadConfig(configPath, &config)
+		log.Printf("Using config from POLYREPO_CONFIG: %s", configPath)
 	} else {
-		cleanenv.ReadEnv(&config)
-	}
-	if config == nil {
-		return nil, fmt.Errorf("base config not found in search paths")
-	}
+		configPath := util.WalkFile(".poly.yaml", 10)
+		if configPath != "" {
+			config = &Config{}
+			cleanenv.ReadConfig(configPath, &config)
+		} else {
+			cleanenv.ReadEnv(&config)
+		}
+		if config == nil {
+			return nil, fmt.Errorf("base config not found in search paths")
+		}
 
-	// Set the path to the config path found for things like saving later.
-	config.Path = configPath
+		// Set the path to the config path found for things like saving later.
+		config.Path = configPath
+	}
 
 	// Validate the config against empty fields.
 	emptyFields, err := util.ValidateStructFields(config, "")

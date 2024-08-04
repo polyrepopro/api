@@ -27,7 +27,7 @@ func TestGetConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cfg, err := GetConfig()
+			cfg, err := GetRelativeConfig()
 
 			if err != nil && tt.wantErr {
 				assert.Error(t, err)

@@ -19,7 +19,7 @@ func (s *AddSuite) SetupTest() {
 
 	var err error
 
-	config, err := config.GetConfig()
+	config, err := config.GetRelativeConfig()
 	assert.NoError(s.T(), err)
 
 	s.workspace, err = config.GetWorkspaceByWorkingDir()

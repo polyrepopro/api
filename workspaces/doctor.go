@@ -8,7 +8,7 @@ import (
 )
 
 func Doctor(name string) error {
-	config, err := config.GetConfig()
+	config, err := config.GetRelativeConfig()
 	if err != nil {
 		multilog.Fatal("workspaces.doctor", "failed to get config", map[string]interface{}{
 			"error": err,

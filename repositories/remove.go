@@ -5,7 +5,7 @@ import (
 )
 
 func Remove(args config.Repository) error {
-	cfg, err := config.GetConfig()
+	cfg, err := config.GetRelativeConfig()
 	if err != nil {
 		return err
 	}
