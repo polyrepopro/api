@@ -8,7 +8,6 @@ import (
 
 func TestExpandPath(t *testing.T) {
 	path := "~/test"
-	expanded, err := ExpandPath(path)
-	assert.NoError(t, err)
+	expanded := ExpandPath(path)
 	assert.Equal(t, "/Users/matthewdavis/test", expanded)
 }

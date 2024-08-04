@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/mateothegreat/go-multilog/multilog"
@@ -8,8 +9,8 @@ import (
 	"github.com/polyrepopro/api/git"
 )
 
-func Doctor(repository *config.Repository) error {
-	path := repository.GetAbsolutePath()
+func Doctor(repository *config.Repository, workspace *config.Workspace) error {
+	path := fmt.Sprintf("%s/%s", workspace.GetAbsolutePath(), repository.Path)
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		multilog.Error("repositories.doctor", "repository directory does not exist", map[string]interface{}{
@@ -18,18 +19,14 @@ func Doctor(repository *config.Repository) error {
 
 		err := git.Clone(git.CloneArgs{
 			URL:  repository.URL,
-			Path: repository.GetAbsolutePath(),
+			Path: path,
 		})
 		if err != nil {
 			multilog.Fatal("repositories.doctor", "failed to clone repository", map[string]interface{}{
 				"repository": repository,
 			})
+			return err
 		}
-
-		multilog.Info("repositories.doctor", "cloned repository", map[string]interface{}{
-			"url":  repository.URL,
-			"path": path,
-		})
 	}
 
 	return nil

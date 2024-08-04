@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/mateothegreat/go-multilog/multilog"
 )
 
 // FileExists checks if the file exists at the given file path.
@@ -161,20 +163,30 @@ func WalkFile(filename string, levels int) string {
 	return ""
 }
 
-func ExpandPath(path string) (string, error) {
+func ExpandPath(path string) string {
 	if strings.HasPrefix(path, "~") {
 		home, err := os.UserHomeDir()
 		if err != nil {
-			return "", err
+			multilog.Error("util.ExpandPath", "failed to get user home directory", map[string]interface{}{
+				"error": err,
+			})
+			return path
 		}
 		path = filepath.Join(home, path[1:])
 	}
 
 	if filepath.IsAbs(path) {
-		return path, nil
+		return path
 	}
 
-	return filepath.Abs(os.ExpandEnv(path))
+	abs, err := filepath.Abs(os.ExpandEnv(path))
+	if err != nil {
+		multilog.Error("util.ExpandPath", "failed to get absolute path", map[string]interface{}{
+			"error": err,
+		})
+		return path
+	}
+	return abs
 }
 
 func IsSubPath(path, basePath string) bool {

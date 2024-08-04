@@ -4,27 +4,39 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert"
-	"github.com/mateothegreat/go-multilog/multilog"
 	"github.com/polyrepopro/api/config"
+	"github.com/polyrepopro/api/test"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestDoctor(t *testing.T) {
+type TestSuite struct {
+	suite.Suite
+	workspace *config.Workspace
+}
+
+func (s *TestSuite) SetupTest() {
+	test.Setup()
+
+	var err error
+
 	config, err := config.GetConfig()
-	if err != nil {
-		multilog.Fatal("workspaces.doctor", "failed to get config", map[string]interface{}{
-			"error": err,
-		})
-	}
+	assert.NoError(s.T(), err)
 
-	workspace, err := config.GetWorkspaceByWorkingDir()
-	if err != nil {
-		multilog.Fatal("workspaces.doctor", "failed to get workspace", map[string]interface{}{
-			"error": err,
-		})
-	}
+	s.workspace, err = config.GetWorkspaceByWorkingDir()
+	assert.NoError(s.T(), err)
+}
 
-	for _, repository := range workspace.Repositories {
-		err := Doctor(&repository)
-		assert.NoError(t, err)
+func TestDoctorSuiteRun(t *testing.T) {
+	suite.Run(t, new(TestSuite))
+}
+
+func (s *TestSuite) TearDownSuite() {
+
+}
+
+func (s *TestSuite) TestDoctor() {
+	for _, repository := range *s.workspace.Repositories {
+		err := Doctor(&repository, s.workspace)
+		assert.NoError(s.T(), err)
 	}
 }

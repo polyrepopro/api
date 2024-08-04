@@ -1,29 +1,60 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/mateothegreat/go-multilog/multilog"
 	"github.com/polyrepopro/api/util"
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
+	Path       string
 	Workspaces []Workspace `yaml:"workspaces"`
 }
 
 type Workspace struct {
-	Name         string       `yaml:"name"`
-	Path         string       `yaml:"path"`
-	Repositories []Repository `yaml:"repositories"`
+	Name         string        `yaml:"name"`
+	Path         string        `yaml:"path"`
+	Repositories *[]Repository `yaml:"repositories"`
 }
 
 type Repository struct {
 	URL    string `yaml:"url"`
-	Branch string `yaml:"branch"`
+	Branch string `yaml:"branch,omitempty"`
 	Path   string `yaml:"path"`
+	Auth   Auth   `yaml:"auth,omitempty"`
+}
+
+type Auth struct {
+	Key string  `yaml:"key,omitempty"`
+	Env AuthEnv `yaml:"env,omitempty"`
+}
+
+type AuthEnv struct {
+	Username string `yaml:"username,omitempty"`
+	Password string `yaml:"password,omitempty"`
+}
+
+func (c *Config) SaveConfig() error {
+	configPath := util.WalkFile(c.Path, 10)
+	if configPath == "" {
+		return fmt.Errorf("config not found in search paths")
+	}
+
+	var buf bytes.Buffer
+	encoder := yaml.NewEncoder(&buf)
+	encoder.SetIndent(2)
+
+	err := encoder.Encode(c)
+	if err != nil {
+		return fmt.Errorf("failed to marshal config: %w", err)
+	}
+
+	return os.WriteFile(configPath, buf.Bytes(), 0644)
 }
 
 func (c *Config) GetWorkspace(name string) (*Workspace, error) {
@@ -43,12 +74,7 @@ func (c *Config) GetWorkspaceByWorkingDir() (*Workspace, error) {
 
 	for {
 		for _, workspace := range c.Workspaces {
-			expandedPath, err := util.ExpandPath(workspace.Path)
-			if err != nil {
-				return nil, fmt.Errorf("failed to expand path for workspace %s: %w", workspace.Name, err)
-			}
-
-			if util.IsSubPath(cwd, expandedPath) {
+			if util.IsSubPath(cwd, util.ExpandPath(workspace.Path)) {
 				return &workspace, nil
 			}
 		}
@@ -75,7 +101,7 @@ func (c *Config) GetRepositoryByWorkingDir() (*Repository, error) {
 		return nil, fmt.Errorf("failed to get workspace: %w", err)
 	}
 
-	for _, repository := range workspace.Repositories {
+	for _, repository := range *workspace.Repositories {
 		if util.IsSubPath(cwd, repository.GetAbsolutePath()) {
 			return &repository, nil
 		}
@@ -84,23 +110,11 @@ func (c *Config) GetRepositoryByWorkingDir() (*Repository, error) {
 }
 
 func (w *Workspace) GetAbsolutePath() string {
-	expandedPath, err := util.ExpandPath(w.Path)
-	if err != nil {
-		multilog.Fatal("config.GetAbsolutePath", "failed to expand path for workspace", map[string]interface{}{
-			"error": err,
-		})
-	}
-	return expandedPath
+	return util.ExpandPath(w.Path)
 }
 
 func (r *Repository) GetAbsolutePath() string {
-	expandedPath, err := util.ExpandPath(r.Path)
-	if err != nil {
-		multilog.Fatal("config.GetAbsolutePath", "failed to expand path for repository", map[string]interface{}{
-			"error": err,
-		})
-	}
-	return expandedPath
+	return util.ExpandPath(r.Path)
 }
 
 // GetConfig returns a config hydrated by reading from .poly.yaml.
@@ -123,15 +137,11 @@ func GetConfig() (*Config, error) {
 		return nil, fmt.Errorf("base config not found in search paths")
 	}
 
-	emptyFields, err := util.ValidateStructFields(config, "")
-	if err != nil {
-		return nil, err
-	}
-	if len(emptyFields) > 0 {
-		return nil, fmt.Errorf("empty fields: %v", emptyFields)
-	}
+	// Set the path to the config path found for things like saving later.
+	config.Path = configPath
 
-	emptyFields, err = util.ValidateStructFields(config, "")
+	// Validate the config against empty fields.
+	emptyFields, err := util.ValidateStructFields(config, "")
 	if err != nil {
 		return nil, err
 	}
