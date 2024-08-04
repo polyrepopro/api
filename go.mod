@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/assert v1.0.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
-	github.com/mateothegreat/go-multilog v0.0.0-20240718081407-2f402bd1c2b7
+	github.com/mateothegreat/go-multilog v0.0.0-20240804220716-7ac35b2b2781
 	github.com/stretchr/testify v1.9.0
 )
 
