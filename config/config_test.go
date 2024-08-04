@@ -3,39 +3,37 @@ package config
 import (
 	"testing"
 
-	"github.com/polyrepopro/api/monitoring"
-	"github.com/stretchr/testify/assert"
+	"github.com/alecthomas/assert"
+	"github.com/polyrepopro/api/test"
+	"github.com/polyrepopro/api/util"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestGetConfig(t *testing.T) {
-	monitoring.Setup()
+type TestSuite struct {
+	suite.Suite
+	path string
+}
 
-	type args struct {
-	}
+func (s *TestSuite) SetupTest() {
+	test.Setup()
+	s.path = "~/workspace/.polyrepo.yaml"
+}
 
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			name:    "default test",
-			args:    args{},
-			wantErr: false,
-		},
-	}
+func TestConfigSuite(t *testing.T) {
+	suite.Run(t, new(TestSuite))
+}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cfg, err := GetRelativeConfig()
+func (s *TestSuite) TearDownSuite() {
 
-			if err != nil && tt.wantErr {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
+}
 
-			assert.GreaterOrEqual(t, len(cfg.Workspaces), 1)
-		})
-	}
+func (s *TestSuite) Test1GetAbsoluteConfig() {
+	_, err := GetAbsoluteConfig(s.path)
+	assert.NoError(s.T(), err)
+}
+
+func (s *TestSuite) Test2GetRelativeConfig() {
+	config, err := GetRelativeConfig()
+	assert.NoError(s.T(), err)
+	assert.Equal(s.T(), util.ExpandPath(s.path), config.Path)
 }

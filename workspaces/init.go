@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/mateothegreat/go-multilog/multilog"
+	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/util"
 )
 
@@ -28,6 +29,7 @@ func Init(args InitArgs) error {
 		return err
 	}
 
+	// If a URL is provided, download the file and save it to disk.
 	if args.URL != "" {
 		// Download the URL file and save to disk
 		resp, err := http.Get(args.URL)
@@ -57,7 +59,19 @@ func Init(args InitArgs) error {
 				"path":  path,
 			})
 		}
+	} else {
+		// Create a new config file with defaults.
+		cfg := config.Config{
+			Path: path,
+		}
+
+		// Save the config file to disk.
+		cfg.SaveConfig()
 	}
+
+	multilog.Info("workspaces.init", "initialized workspace", map[string]interface{}{
+		"path": path,
+	})
 
 	return nil
 }

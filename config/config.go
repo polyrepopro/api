@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/polyrepopro/api/util"
@@ -13,7 +14,8 @@ import (
 )
 
 type Config struct {
-	Path       string
+	Path       string      `yaml:"-"`
+	SyncedAt   time.Time   `yaml:"synced"`
 	Workspaces []Workspace `yaml:"workspaces"`
 }
 
@@ -144,7 +146,7 @@ func GetRelativeConfig() (*Config, error) {
 		cleanenv.ReadConfig(configPath, &config)
 		log.Printf("Using config from POLYREPO_CONFIG: %s", configPath)
 	} else {
-		configPath := util.WalkFile(".poly.yaml", 10)
+		configPath := util.WalkFile(".polyrepo.yaml", 10)
 		if configPath != "" {
 			config = &Config{}
 			cleanenv.ReadConfig(configPath, &config)
