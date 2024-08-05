@@ -7,6 +7,7 @@ import (
 	"github.com/mateothegreat/go-multilog/multilog"
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/git"
+	"github.com/polyrepopro/api/repositories"
 	"github.com/polyrepopro/api/util"
 )
 
@@ -59,6 +60,16 @@ func Sync(args SyncArgs) error {
 					"repository": repo.URL,
 				})
 			}
+			err = repositories.Update(&workspace, &repo)
+			if err != nil {
+				multilog.Fatal("workspace.sync", "failed to update repository", map[string]interface{}{
+					"repository": repo.URL,
+					"error":      err,
+				})
+			}
+			multilog.Info("workspace.sync", "updated repository", map[string]interface{}{
+				"repository": repo.URL,
+			})
 		}
 	}
 
