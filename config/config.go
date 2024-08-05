@@ -31,6 +31,7 @@ type Workspace struct {
 
 type Repository struct {
 	URL    string `yaml:"url"`
+	Origin string `yaml:"origin,omitempty"`
 	Branch string `yaml:"branch,omitempty"`
 	Path   string `yaml:"path"`
 	Auth   *Auth  `yaml:"auth,omitempty"`
