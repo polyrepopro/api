@@ -7,15 +7,24 @@ import (
 	"github.com/alecthomas/assert"
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/test"
+	"github.com/polyrepopro/api/util"
 	"github.com/stretchr/testify/suite"
 )
 
 type TestSuite struct {
 	suite.Suite
+	cfg *config.Config
 }
 
 func (s *TestSuite) SetupTest() {
 	test.Setup()
+
+	var err error
+	s.cfg, err = Init(InitArgs{
+		Path: "~/.polyrepo.yaml",
+		URL:  "https://raw.githubusercontent.com/polyrepopro/workspace/main/.polyrepo.yaml",
+	})
+	assert.NoError(s.T(), err)
 }
 
 func TestInitSuite(t *testing.T) {
@@ -23,36 +32,30 @@ func TestInitSuite(t *testing.T) {
 }
 
 func (s *TestSuite) Test1InitFromRemoteURL() {
-	err := Init(InitArgs{
-		Path: "~/.polyrepo.yaml",
-		URL:  "https://raw.githubusercontent.com/polyrepopro/workspace/main/.polyrepo.yaml",
-	})
+
+	assert.Equal(s.T(), s.cfg.Path, util.ExpandPath("~/.polyrepo.yaml"))
+
+	_, err := config.GetAbsoluteConfig(s.cfg.Path)
 	assert.NoError(s.T(), err)
 
-	_, err = config.GetAbsoluteConfig("~/.polyrepo.yaml")
-	assert.NoError(s.T(), err)
-
-	err = os.Remove("~/.polyrepo.yaml")
+	err = os.Remove(s.cfg.Path)
 	assert.NoError(s.T(), err)
 }
 
 func (s *TestSuite) Test2InitHomeDirDefault() {
-	err := Init(InitArgs{
-		Path: "~/.polyrepo.yaml",
-	})
+	_, err := config.GetAbsoluteConfig(s.cfg.Path)
 	assert.NoError(s.T(), err)
 
-	_, err = config.GetAbsoluteConfig("~/.polyrepo.yaml")
+	err = os.Remove(s.cfg.Path)
 	assert.NoError(s.T(), err)
 }
 
 func (s *TestSuite) Test2InitLocalDirDefault() {
-	err := Init(InitArgs{
-		Path: "./temp/.polyrepo.yaml",
-	})
+	_, err := config.GetAbsoluteConfig(s.cfg.Path)
 	assert.NoError(s.T(), err)
+	assert.NotNil(s.T(), s.cfg)
 
-	_, err = config.GetAbsoluteConfig("./temp/.polyrepo.yaml")
+	_, err = config.GetAbsoluteConfig(s.cfg.Path)
 	assert.NoError(s.T(), err)
 
 	err = os.RemoveAll("./temp")

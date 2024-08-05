@@ -16,7 +16,7 @@ type TestSuite struct {
 
 func (s *TestSuite) SetupTest() {
 	test.Setup()
-	s.path = "~/workspace/.polyrepo.yaml"
+	s.path = "~/.polyrepo.yaml"
 }
 
 func TestConfigSuite(t *testing.T) {
@@ -34,6 +34,18 @@ func (s *TestSuite) Test1GetAbsoluteConfig() {
 
 func (s *TestSuite) Test2GetRelativeConfig() {
 	config, err := GetRelativeConfig()
+	assert.NoError(s.T(), err)
+	assert.Equal(s.T(), util.ExpandPath(s.path), config.Path)
+}
+
+func (s *TestSuite) Test3GetConfigWithPath() {
+	config, err := GetConfig(&s.path)
+	assert.NoError(s.T(), err)
+	assert.Equal(s.T(), util.ExpandPath(s.path), config.Path)
+}
+
+func (s *TestSuite) Test4GetConfigWithoutPath() {
+	config, err := GetConfig(nil)
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), util.ExpandPath(s.path), config.Path)
 }
