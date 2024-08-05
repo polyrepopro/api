@@ -1,13 +1,13 @@
 package workspaces
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
 	"github.com/alecthomas/assert"
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/test"
+	"github.com/polyrepopro/api/util"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -36,7 +36,7 @@ func (s *SyncSuite) TearDownTest() {
 	assert.NoError(s.T(), err)
 
 	for _, workspace := range *s.cfg.Workspaces {
-		err = os.RemoveAll(workspace.Path)
+		err = os.RemoveAll(util.ExpandPath(workspace.Path))
 		assert.NoError(s.T(), err)
 	}
 }
@@ -45,11 +45,6 @@ func (s *SyncSuite) Test1Sync() {
 
 	assert.NotNil(s.T(), s.cfg)
 
-	msgs, errs := SyncAll(nil)
+	_, errs := SyncAll(nil)
 	assert.Equal(s.T(), 0, len(errs))
-	if len(msgs) != 1 {
-		for _, msg := range msgs {
-			fmt.Println(msg)
-		}
-	}
 }

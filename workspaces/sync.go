@@ -30,14 +30,12 @@ func SyncAll(args *SyncArgs) ([]string, []error) {
 			syncArgs.DefaultArgs = args.DefaultArgs
 		}
 
-		msgs, err := Sync(syncArgs)
+		m, err := Sync(syncArgs)
 		if err != nil {
 			return nil, []error{err}
 		}
 
-		for _, msg := range msgs {
-			fmt.Println(msg)
-		}
+		msgs = append(msgs, m...)
 	}
 
 	return msgs, nil
