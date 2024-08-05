@@ -38,14 +38,15 @@ func Sync(args SyncArgs) error {
 			})
 		}
 		for _, repo := range *workspace.Repositories {
+			repoPath := fmt.Sprintf("%s/%s", workspacePath, repo.Path)
 			multilog.Info("workspace.sync", "syncing repository", map[string]interface{}{
 				"workspace": workspace.Name,
-				"path":      util.ExpandPath(repo.Path),
+				"path":      repoPath,
 			})
-			if _, err := os.Stat(util.ExpandPath(repo.Path)); os.IsNotExist(err) {
+			if _, err := os.Stat(repoPath); os.IsNotExist(err) {
 				err = git.Clone(git.CloneArgs{
 					URL:  repo.URL,
-					Path: util.ExpandPath(repo.Path),
+					Path: repoPath,
 					Auth: repo.Auth,
 				})
 				if err != nil {
