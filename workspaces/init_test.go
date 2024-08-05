@@ -36,7 +36,7 @@ func (s *TestSuite) Test1InitFromRemoteURL() {
 	assert.NoError(s.T(), err)
 }
 
-func (s *TestSuite) Test2InitWithDefaults() {
+func (s *TestSuite) Test2InitHomeDirDefault() {
 	err := Init(InitArgs{
 		Path: "~/.polyrepo.yaml",
 	})
@@ -44,7 +44,17 @@ func (s *TestSuite) Test2InitWithDefaults() {
 
 	_, err = config.GetAbsoluteConfig("~/.polyrepo.yaml")
 	assert.NoError(s.T(), err)
+}
 
-	// err = os.Remove("~/.polyrepo.yaml")
-	// assert.NoError(s.T(), err)
+func (s *TestSuite) Test2InitLocalDirDefault() {
+	err := Init(InitArgs{
+		Path: "./temp/.polyrepo.yaml",
+	})
+	assert.NoError(s.T(), err)
+
+	_, err = config.GetAbsoluteConfig("./temp/.polyrepo.yaml")
+	assert.NoError(s.T(), err)
+
+	err = os.RemoveAll("./temp")
+	assert.NoError(s.T(), err)
 }

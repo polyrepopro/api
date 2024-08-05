@@ -52,7 +52,7 @@ func (c *Config) SaveConfig() error {
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
 
-	return os.WriteFile(c.Path, buf.Bytes(), 0644)
+	return os.WriteFile(c.Path, buf.Bytes(), 0744)
 }
 
 func (c *Config) GetWorkspace(name string) (*Workspace, error) {
