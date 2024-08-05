@@ -10,18 +10,18 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type PullSuite struct {
+type PushSuite struct {
 	suite.Suite
 	cfg       *config.Config
 	workspace *config.Workspace
 	repo      *config.Repository
 }
 
-func (s *PullSuite) SetupTest() {
+func (s *PushSuite) SetupTest() {
 	test.Setup()
 
 	var err error
-	s.cfg, err = config.GetAbsoluteConfig("~/.polyrepo.yaml")
+	s.cfg, err = config.GetAbsoluteConfig("~/.polyrepo.test.yaml")
 	if err != nil {
 		log.Fatalf("failed to get absolute config: %v", err)
 	}
@@ -30,12 +30,12 @@ func (s *PullSuite) SetupTest() {
 	s.repo = &(*s.workspace.Repositories)[0]
 }
 
-func TestPullSuite(t *testing.T) {
-	suite.Run(t, new(PullSuite))
+func TestPushSuite(t *testing.T) {
+	suite.Run(t, new(PushSuite))
 }
 
-func (s *PullSuite) Test1Pull() {
-	err := Pull(PullArgs{
+func (s *PushSuite) Test1Push() {
+	err := Push(PushArgs{
 		Workspace:  s.workspace,
 		Repository: s.repo,
 	})
