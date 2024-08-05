@@ -30,4 +30,6 @@ func Sync(workspace *config.Workspace, args SyncArgs) error {
 			}
 		}
 	}
+
+	return nil
 }
