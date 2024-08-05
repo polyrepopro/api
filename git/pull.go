@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/mateothegreat/go-multilog/multilog"
 	"github.com/polyrepopro/api/config"
 )
 
@@ -12,6 +13,15 @@ type PullArgs struct {
 	Remote string
 	Path   string
 	Auth   *config.Auth
+}
+
+type pullProgress struct{}
+
+func (h *pullProgress) Write(p []byte) (n int, err error) {
+	multilog.Debug("git.pull", "pulling progress", map[string]interface{}{
+		"message": string(p),
+	})
+	return len(p), nil
 }
 
 func Pull(args PullArgs) error {
@@ -27,6 +37,7 @@ func Pull(args PullArgs) error {
 
 	opts := &git.PullOptions{
 		RemoteName: args.Remote,
+		Progress:   &pullProgress{},
 	}
 
 	auth := GetAuth(args.URL, args.Auth)
