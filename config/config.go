@@ -14,9 +14,9 @@ import (
 )
 
 type Config struct {
-	Path       string      `yaml:"-"`
-	Synced     time.Time   `yaml:"synced" required:"false"`
-	Workspaces []Workspace `yaml:"workspaces" required:"false"`
+	Path       string       `yaml:"-"`
+	Synced     time.Time    `yaml:"synced" required:"false"`
+	Workspaces *[]Workspace `yaml:"workspaces" required:"false"`
 }
 
 type Workspace struct {
@@ -29,7 +29,7 @@ type Repository struct {
 	URL    string `yaml:"url"`
 	Branch string `yaml:"branch,omitempty"`
 	Path   string `yaml:"path"`
-	Auth   Auth   `yaml:"auth,omitempty"`
+	Auth   *Auth  `yaml:"auth,omitempty"`
 }
 
 type Auth struct {
@@ -56,7 +56,7 @@ func (c *Config) SaveConfig() error {
 }
 
 func (c *Config) GetWorkspace(name string) (*Workspace, error) {
-	for _, workspace := range c.Workspaces {
+	for _, workspace := range *c.Workspaces {
 		if workspace.Name == name {
 			return &workspace, nil
 		}
@@ -71,7 +71,7 @@ func (c *Config) GetWorkspaceByWorkingDir() (*Workspace, error) {
 	}
 
 	for {
-		for _, workspace := range c.Workspaces {
+		for _, workspace := range *c.Workspaces {
 			if util.IsSubPath(cwd, util.ExpandPath(workspace.Path)) {
 				return &workspace, nil
 			}
