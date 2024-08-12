@@ -9,7 +9,7 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	test.Setup()
+	test.Setup() // Configures the test environment (like logging).
 	ctx := context.Background()
 	hook := &config.Hook{
 		Type: config.CloneHook,

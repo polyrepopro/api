@@ -9,7 +9,7 @@ import (
 )
 
 func TestWatch(t *testing.T) {
-	test.Setup()
+	test.Setup() // Configures the test environment (like logging).
 	watch := config.Watch{
 		Cwd: "~/workspace/polyrepo/examples/example-test-repo",
 		Paths: []string{
