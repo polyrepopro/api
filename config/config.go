@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/polyrepopro/api/util"
+	"github.com/mateothegreat/go-util/files"
+	"github.com/mateothegreat/go-util/validation"
 	"gopkg.in/yaml.v3"
 )
 
@@ -30,11 +31,25 @@ type Workspace struct {
 }
 
 type Repository struct {
-	URL    string `yaml:"url"`
-	Origin string `yaml:"origin,omitempty"`
-	Branch string `yaml:"branch,omitempty"`
-	Path   string `yaml:"path"`
-	Auth   *Auth  `yaml:"auth,omitempty"`
+	URL     string   `yaml:"url"`
+	Origin  string   `yaml:"origin,omitempty"`
+	Branch  string   `yaml:"branch,omitempty"`
+	Path    string   `yaml:"path"`
+	Auth    *Auth    `yaml:"auth,omitempty"`
+	Watches *[]Watch `yaml:"watches,omitempty"`
+}
+
+type Watch struct {
+	Cwd      string    `yaml:"cwd" required:"false"`
+	Paths    []string  `yaml:"paths" required:"true"`
+	Commands []Command `yaml:"commands" required:"true"`
+}
+
+type Command struct {
+	Name        string   `yaml:"name" required:"true"`
+	Cwd         string   `yaml:"cwd" required:"false"`
+	ExitOnError bool     `yaml:"exitOnError" required:"false"`
+	Command     []string `yaml:"command" required:"true"`
 }
 
 type Auth struct {
@@ -91,7 +106,7 @@ func (c *Config) GetWorkspaceByWorkingDir() (*Workspace, error) {
 
 	for {
 		for _, workspace := range *c.Workspaces {
-			if util.IsSubPath(cwd, util.ExpandPath(workspace.Path)) {
+			if files.IsSubPath(cwd, files.ExpandPath(workspace.Path)) {
 				return &workspace, nil
 			}
 		}
@@ -124,7 +139,7 @@ func (c *Config) GetRepositoryByWorkingDir() (*Repository, error) {
 	}
 
 	for _, repository := range *workspace.Repositories {
-		if util.IsSubPath(cwd, repository.GetAbsolutePath()) {
+		if files.IsSubPath(cwd, repository.GetAbsolutePath()) {
 			return &repository, nil
 		}
 	}
@@ -136,7 +151,7 @@ func (c *Config) GetRepositoryByWorkingDir() (*Repository, error) {
 // Returns:
 //   - string: The absolute path of the workspace.
 func (w *Workspace) GetAbsolutePath() string {
-	return util.ExpandPath(w.Path)
+	return files.ExpandPath(w.Path)
 }
 
 // GetAbsolutePath returns the absolute path of the repository.
@@ -144,7 +159,7 @@ func (w *Workspace) GetAbsolutePath() string {
 // Returns:
 //   - string: The absolute path of the repository.
 func (r *Repository) GetAbsolutePath() string {
-	return util.ExpandPath(r.Path)
+	return files.ExpandPath(r.Path)
 }
 
 // GetConfig returns a config hydrated by reading from a path.
@@ -169,10 +184,10 @@ func GetConfig(path *string) (*Config, error) {
 //   - error: An error if the config could not be found.
 func GetAbsoluteConfig(path string) (*Config, error) {
 	config := Config{
-		Path: util.ExpandPath(path),
+		Path: files.ExpandPath(path),
 	}
 
-	err := cleanenv.ReadConfig(util.ExpandPath(path), &config)
+	err := cleanenv.ReadConfig(files.ExpandPath(path), &config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config: %w", err)
 	}
@@ -196,7 +211,7 @@ func GetRelativeConfig() (*Config, error) {
 		cleanenv.ReadConfig(configPath, &config)
 		log.Printf("Using config from POLYREPO_CONFIG: %s", configPath)
 	} else {
-		configPath := util.WalkFile(".polyrepo.yaml", 10)
+		configPath := files.WalkFile(".polyrepo.yaml", 10)
 		if configPath != "" {
 			config = &Config{}
 			cleanenv.ReadConfig(configPath, &config)
@@ -212,7 +227,7 @@ func GetRelativeConfig() (*Config, error) {
 	}
 
 	// Validate the config against empty fields.
-	emptyFields, err := util.ValidateStructFields(config, "")
+	emptyFields, err := validation.ValidateStructFields(config, "")
 	if err != nil {
 		return nil, err
 	}

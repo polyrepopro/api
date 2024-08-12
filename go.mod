@@ -4,9 +4,11 @@ go 1.22.0
 
 require (
 	github.com/alecthomas/assert v1.0.0
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/mateothegreat/go-multilog v0.0.0-20240804220716-7ac35b2b2781
+	github.com/mateothegreat/go-util v0.0.0-20240812031932-d120d349cd20
 	github.com/stretchr/testify v1.9.0
 	gopkg.in/yaml.v3 v3.0.1
 )

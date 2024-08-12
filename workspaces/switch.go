@@ -3,9 +3,9 @@ package workspaces
 import (
 	"fmt"
 
+	"github.com/mateothegreat/go-util/files"
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/git"
-	"github.com/polyrepopro/api/util"
 )
 
 type SwitchArgs struct {
@@ -18,7 +18,7 @@ func Switch(args SwitchArgs) []error {
 
 	for _, repo := range *args.Workspace.Repositories {
 		err := git.Switch(&git.SwitchArgs{
-			Path:   fmt.Sprintf("%s/%s", util.ExpandPath(args.Workspace.Path), repo.Path),
+			Path:   fmt.Sprintf("%s/%s", files.ExpandPath(args.Workspace.Path), repo.Path),
 			Branch: args.Branch,
 		})
 		if err != nil {

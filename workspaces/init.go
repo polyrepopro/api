@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/mateothegreat/go-util/files"
 	"github.com/polyrepopro/api/config"
-	"github.com/polyrepopro/api/util"
 )
 
 type InitArgs struct {
@@ -19,7 +19,7 @@ type InitArgs struct {
 func Init(args InitArgs) (*config.Config, error) {
 	var cfg *config.Config
 
-	path := util.ExpandPath(args.Path)
+	path := files.ExpandPath(args.Path)
 
 	// Check if the base directory exists, if not create it
 	baseDir := filepath.Dir(path)

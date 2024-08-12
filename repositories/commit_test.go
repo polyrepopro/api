@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/alecthomas/assert"
+	"github.com/mateothegreat/go-util/files"
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/test"
-	"github.com/polyrepopro/api/util"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -39,7 +39,7 @@ func TestCommitSuite(t *testing.T) {
 }
 
 func (s *CommitSuite) Test1Commit() {
-	testFilePath := fmt.Sprintf("%s/%s/test_commits.txt", util.ExpandPath(s.workspace.Path), s.repo.Path)
+	testFilePath := fmt.Sprintf("%s/%s/test_commits.txt", files.ExpandPath(s.workspace.Path), s.repo.Path)
 	testContent := fmt.Sprintf("Test commit @ %s", time.Now())
 
 	err := os.WriteFile(testFilePath, []byte(testContent), 0644)

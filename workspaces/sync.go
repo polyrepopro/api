@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mateothegreat/go-util/files"
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/git"
 	"github.com/polyrepopro/api/repositories"
-	"github.com/polyrepopro/api/util"
 )
 
 type SyncArgs struct {
@@ -54,7 +54,7 @@ func Sync(args SyncArgs) ([]string, error) {
 		return nil, err
 	}
 
-	workspacePath := util.ExpandPath(workspace.Path)
+	workspacePath := files.ExpandPath(workspace.Path)
 
 	if _, err := os.Stat(workspacePath); os.IsNotExist(err) {
 		err = os.MkdirAll(workspacePath, 0755)

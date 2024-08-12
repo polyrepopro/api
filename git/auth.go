@@ -7,14 +7,15 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/mateothegreat/go-multilog/multilog"
+	"github.com/mateothegreat/go-util/files"
+	"github.com/mateothegreat/go-util/urls"
 	"github.com/polyrepopro/api/config"
-	"github.com/polyrepopro/api/util"
 )
 
 func GetAuth(url string, auth *config.Auth) transport.AuthMethod {
-	if auth == nil && util.GetProtocol(url) == "ssh" {
+	if auth == nil && urls.GetProtocol(url) == "ssh" {
 		// Check if the default SSH key exists
-		defaultSSHKey := util.ExpandPath("~/.ssh/id_rsa")
+		defaultSSHKey := files.ExpandPath("~/.ssh/id_rsa")
 		if _, err := os.Stat(defaultSSHKey); err == nil {
 			// Default SSH key exists, use it
 			sshAuth, err := ssh.NewPublicKeysFromFile("git", defaultSSHKey, "")

@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert"
+	"github.com/mateothegreat/go-util/files"
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/test"
-	"github.com/polyrepopro/api/util"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -36,7 +36,7 @@ func (s *SyncSuite) TearDownTest() {
 	assert.NoError(s.T(), err)
 
 	for _, workspace := range *s.cfg.Workspaces {
-		err = os.RemoveAll(util.ExpandPath(workspace.Path))
+		err = os.RemoveAll(files.ExpandPath(workspace.Path))
 		assert.NoError(s.T(), err)
 	}
 }

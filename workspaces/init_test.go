@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/alecthomas/assert"
+	"github.com/mateothegreat/go-util/files"
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/test"
-	"github.com/polyrepopro/api/util"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -33,7 +33,7 @@ func TestInitSuite(t *testing.T) {
 
 func (s *TestSuite) Test1InitFromRemoteURL() {
 
-	assert.Equal(s.T(), s.cfg.Path, util.ExpandPath("~/.polyrepo.yaml"))
+	assert.Equal(s.T(), s.cfg.Path, files.ExpandPath("~/.polyrepo.yaml"))
 
 	_, err := config.GetAbsoluteConfig(s.cfg.Path)
 	assert.NoError(s.T(), err)
