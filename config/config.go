@@ -36,20 +36,35 @@ type Repository struct {
 	Branch  string   `yaml:"branch,omitempty"`
 	Path    string   `yaml:"path"`
 	Auth    *Auth    `yaml:"auth,omitempty"`
+	Hooks   *[]Hook  `yaml:"hooks,omitempty"`
 	Watches *[]Watch `yaml:"watches,omitempty"`
 }
 
-type Watch struct {
-	Cwd      string    `yaml:"cwd" required:"false"`
-	Paths    []string  `yaml:"paths" required:"true"`
-	Commands []Command `yaml:"commands" required:"true"`
-}
+type HookType string
+
+const (
+	CloneHook   HookType = "clone"
+	PullHook    HookType = "pull"
+	PushHook    HookType = "push"
+	PrePushHook HookType = "pre_push"
+)
 
 type Command struct {
 	Name        string   `yaml:"name" required:"true"`
 	Cwd         string   `yaml:"cwd" required:"false"`
 	ExitOnError bool     `yaml:"exitOnError" required:"false"`
 	Command     []string `yaml:"command" required:"true"`
+}
+
+type Hook struct {
+	Type     HookType  `yaml:"type" required:"true"`
+	Commands []Command `yaml:"commands" required:"true"`
+}
+
+type Watch struct {
+	Cwd      string    `yaml:"cwd" required:"false"`
+	Paths    []string  `yaml:"paths" required:"true"`
+	Commands []Command `yaml:"commands" required:"true"`
 }
 
 type Auth struct {

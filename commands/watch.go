@@ -1,10 +1,7 @@
 package commands
 
 import (
-	"bufio"
 	"context"
-	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -105,99 +102,7 @@ func RestartCommands(commands []config.Command, cwd string) (context.Context, co
 				})
 				return
 			default:
-				if command.Cwd != "" {
-					if err := os.Chdir(files.ExpandPath(command.Cwd)); err != nil {
-						multilog.Error("commands.watch", "failed to change directory", map[string]interface{}{
-							"command": command,
-							"error":   err,
-						})
-					}
-				} else if cwd != "" {
-					if err := os.Chdir(files.ExpandPath(cwd)); err != nil {
-						multilog.Error("commands.watch", "failed to change directory", map[string]interface{}{
-							"command": command,
-							"error":   err,
-						})
-					}
-				}
-
-				cmd := exec.CommandContext(ctx, command.Command[0], command.Command[1:]...)
-				stdout, err := cmd.StdoutPipe()
-				if err != nil {
-					multilog.Error("commands.watch", "failed to get stdout pipe", map[string]interface{}{
-						"command": command,
-						"error":   err,
-					})
-					return
-				}
-				stderr, err := cmd.StderrPipe()
-				if err != nil {
-					multilog.Error("commands.watch", "failed to get stderr pipe", map[string]interface{}{
-						"command": command,
-						"error":   err,
-					})
-					return
-				}
-
-				go func() {
-					scanner := bufio.NewScanner(stdout)
-					for scanner.Scan() {
-						select {
-						case <-ctx.Done():
-							return
-						default:
-							multilog.Info("commands.watch", "stdout", map[string]interface{}{
-								"name":   command.Name,
-								"output": scanner.Text(),
-							})
-						}
-					}
-					if err := scanner.Err(); err != nil {
-						multilog.Error("commands.watch", "error reading stdout", map[string]interface{}{
-							"command": command,
-							"error":   err,
-						})
-					}
-				}()
-
-				go func() {
-					scanner := bufio.NewScanner(stderr)
-					for scanner.Scan() {
-						select {
-						case <-ctx.Done():
-							return
-						default:
-							multilog.Info("commands.watch", "stderr", map[string]interface{}{
-								"name":   command.Name,
-								"output": scanner.Text(),
-							})
-						}
-					}
-					if err := scanner.Err(); err != nil {
-						multilog.Error("commands.watch", "error reading stderr", map[string]interface{}{
-							"command": command,
-							"error":   err,
-						})
-					}
-				}()
-
-				err = cmd.Start()
-				if err != nil {
-					multilog.Error("commands.watch", "failed to start command", map[string]interface{}{
-						"name":  command.Name,
-						"error": err,
-					})
-					if command.ExitOnError {
-						os.Exit(1)
-					}
-					return
-				}
-
-				multilog.Info("commands.watch", "started command", map[string]interface{}{
-					"command": command,
-					"cwd":     command.Cwd,
-					"pid":     cmd.Process.Pid,
-				})
+				Run(ctx, command, cwd)
 			}
 		}(command)
 	}

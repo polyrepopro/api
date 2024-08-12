@@ -3,6 +3,7 @@ package commands
 import (
 	"testing"
 
+	"github.com/polyrepopro/api/commands"
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/test"
 )
@@ -14,7 +15,7 @@ func TestWatch(t *testing.T) {
 		Paths: []string{
 			"**/*.go",
 		},
-		Commands: []config.Command{
+		Commands: []commands.Command{
 			{
 				Name:    "run",
 				Cwd:     "test",
