@@ -1,9 +1,14 @@
 package git
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/format/gitignore"
+	"github.com/mateothegreat/go-util/files"
 	"github.com/polyrepopro/api/config"
 )
 
@@ -24,6 +29,28 @@ type CommitResultMessage struct {
 	Status git.StatusCode
 }
 
+func AddGitignoreToWorktree(wt *git.Worktree, path string) ([]gitignore.Pattern, error) {
+	if !files.FileExists(filepath.Join(path, ".gitignore")) {
+		return nil, nil
+	}
+
+	f, err := os.Open(filepath.Join(path, ".gitignore"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to read .gitignore: %w", err)
+	}
+	defer f.Close()
+
+	fileScanner := bufio.NewScanner(f)
+	fileScanner.Split(bufio.ScanLines)
+
+	var patterns []gitignore.Pattern
+	for fileScanner.Scan() {
+		patterns = append(patterns, gitignore.ParsePattern(fileScanner.Text(), nil))
+	}
+
+	return patterns, nil
+}
+
 func Commit(args CommitArgs) (*CommitResult, error) {
 	result := &CommitResult{
 		Path:     args.Path,
@@ -39,6 +66,13 @@ func Commit(args CommitArgs) (*CommitResult, error) {
 	if err != nil {
 		return result, fmt.Errorf("failed to get worktree: %w", err)
 	}
+
+	patterns, err := AddGitignoreToWorktree(worktree, args.Path)
+	if err != nil {
+		return result, fmt.Errorf("failed to add gitignore to worktree: %w", err)
+	}
+
+	worktree.Excludes = append(worktree.Excludes, patterns...)
 
 	status, err := worktree.Status()
 	if err != nil {
@@ -58,7 +92,7 @@ func Commit(args CommitArgs) (*CommitResult, error) {
 	}
 
 	hash, err := worktree.Commit(args.Message, &git.CommitOptions{
-		All: true,
+		All: false,
 	})
 	if err != nil {
 		return result, fmt.Errorf("failed to commit changes: %w", err)

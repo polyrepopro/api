@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/mateothegreat/go-util/files"
 	"github.com/polyrepopro/api/config"
@@ -18,8 +19,13 @@ type InitArgs struct {
 
 func Init(args InitArgs) (*config.Config, error) {
 	var cfg *config.Config
+	var path string
 
-	path := files.ExpandPath(args.Path)
+	if args.Path == "" {
+		path = files.ExpandPath("~/.polyrepo.yaml")
+	} else {
+		path = files.ExpandPath(args.Path)
+	}
 
 	// Check if the base directory exists, if not create it
 	baseDir := filepath.Dir(path)
@@ -55,8 +61,10 @@ func Init(args InitArgs) (*config.Config, error) {
 		}
 	} else {
 		// Create a new config file with defaults.
-		cfg := config.Config{
-			Path: path,
+		cfg = &config.Config{
+			Path:       path,
+			Synced:     time.Now(),
+			Workspaces: &[]config.Workspace{},
 		}
 
 		// Save the config file to disk.
