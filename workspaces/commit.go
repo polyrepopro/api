@@ -1,15 +1,13 @@
 package workspaces
 
 import (
-	"fmt"
-	"time"
-
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/repositories"
 )
 
 type CommitArgs struct {
 	Workspace *config.Workspace
+	Message   string
 }
 
 func Commit(args CommitArgs) ([]repositories.CommitResult, []error) {
@@ -20,7 +18,7 @@ func Commit(args CommitArgs) ([]repositories.CommitResult, []error) {
 		res, err := repositories.Commit(repositories.CommitArgs{
 			Workspace:  args.Workspace,
 			Repository: &repo,
-			Message:    fmt.Sprintf("Test commit @ %s", time.Now()),
+			Message:    args.Message,
 		})
 		if err != nil {
 			errors = append(errors, err)

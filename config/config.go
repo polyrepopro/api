@@ -20,6 +20,7 @@ type DefaultArgs struct {
 
 type Config struct {
 	Path       string       `yaml:"-"`
+	Current    string       `yaml:"current" required:"false"`
 	Synced     time.Time    `yaml:"synced" required:"false"`
 	Workspaces *[]Workspace `yaml:"workspaces" required:"false"`
 }
@@ -31,6 +32,7 @@ type Workspace struct {
 }
 
 type Repository struct {
+	Name    string   `yaml:"name"`
 	URL     string   `yaml:"url"`
 	Origin  string   `yaml:"origin,omitempty"`
 	Branch  string   `yaml:"branch,omitempty"`
@@ -182,9 +184,9 @@ func (r *Repository) GetAbsolutePath() string {
 // Returns:
 //   - *Config: The hydrated config.
 //   - error: An error if the config could not be found.
-func GetConfig(path *string) (*Config, error) {
-	if path != nil {
-		return GetAbsoluteConfig(*path)
+func GetConfig(path string) (*Config, error) {
+	if path != "" {
+		return GetAbsoluteConfig(path)
 	}
 	return GetRelativeConfig()
 }

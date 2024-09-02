@@ -49,7 +49,7 @@ func Init(args InitArgs) (*config.Config, error) {
 			return nil, fmt.Errorf("failed to write file: %w", err)
 		}
 
-		cfg, err = config.GetConfig(&path)
+		cfg, err = config.GetConfig(path)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get config: %w", err)
 		}
