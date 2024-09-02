@@ -36,8 +36,10 @@ func Pull(args PullArgs) error {
 	}
 
 	opts := &git.PullOptions{
-		RemoteName: args.Remote,
-		Progress:   &pullProgress{},
+		RemoteName:        args.Remote,
+		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+		Progress:          &pullProgress{},
+		Force:             true, // Allow non-fast-forward updates
 	}
 
 	auth := GetAuth(args.URL, args.Auth)
@@ -47,7 +49,7 @@ func Pull(args PullArgs) error {
 
 	err = worktree.Pull(opts)
 	if err != nil && err != git.NoErrAlreadyUpToDate {
-		return fmt.Errorf("failed to pull changes: %w", err)
+		return fmt.Errorf("failed to pull changes: %w for %q", err, args.Path)
 	}
 
 	return nil

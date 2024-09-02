@@ -2,6 +2,7 @@ package workspaces
 
 import (
 	"github.com/polyrepopro/api/config"
+	"github.com/polyrepopro/api/git"
 	"github.com/polyrepopro/api/repositories"
 )
 
@@ -10,9 +11,9 @@ type CommitArgs struct {
 	Message   string
 }
 
-func Commit(args CommitArgs) ([]repositories.CommitResult, []error) {
+func Commit(args CommitArgs) ([]git.CommitResult, []error) {
 	var errors []error
-	var results []repositories.CommitResult
+	var results []git.CommitResult
 
 	for _, repo := range *args.Workspace.Repositories {
 		res, err := repositories.Commit(repositories.CommitArgs{
@@ -23,7 +24,9 @@ func Commit(args CommitArgs) ([]repositories.CommitResult, []error) {
 		if err != nil {
 			errors = append(errors, err)
 		}
-		results = append(results, res)
+		if res != nil {
+			results = append(results, *res)
+		}
 	}
 
 	return results, errors

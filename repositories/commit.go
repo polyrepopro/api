@@ -3,6 +3,7 @@ package repositories
 import (
 	"fmt"
 
+	"github.com/mateothegreat/go-util/files"
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/git"
 )
@@ -14,25 +15,14 @@ type CommitArgs struct {
 	Message    string
 }
 
-type CommitResult struct {
-	Hash string
-}
-
-func Commit(args CommitArgs) (CommitResult, error) {
-	hash, err := git.Commit(git.CommitArgs{
-		Path: fmt.Sprintf("%s/%s", args.Workspace.Path, args.Repository.Path),
+func Commit(args CommitArgs) (*git.CommitResult, error) {
+	result, err := git.Commit(git.CommitArgs{
+		Path: files.ExpandPath(fmt.Sprintf("%s/%s", args.Workspace.Path, args.Repository.Path)),
 		Auth: args.Repository.Auth,
 	})
 	if err != nil {
-		return CommitResult{}, fmt.Errorf("failed to commit changes: %w", err)
+		return nil, fmt.Errorf("failed to commit changes: %w", err)
 	}
 
-	return CommitResult{
-		Hash: func() string {
-			if hash == nil {
-				return ""
-			}
-			return hash.String()
-		}(),
-	}, nil
+	return result, nil
 }

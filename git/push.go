@@ -27,7 +27,7 @@ func (h *pushProgress) Write(p []byte) (n int, err error) {
 func Push(args PushArgs) error {
 	repo, err := git.PlainOpen(args.Path)
 	if err != nil {
-		return fmt.Errorf("failed to open repository: %w", err)
+		return fmt.Errorf("failed to open repository: %w for repo %q", err, args.Path)
 	}
 
 	opts := &git.PushOptions{
@@ -42,7 +42,7 @@ func Push(args PushArgs) error {
 
 	err = repo.Push(opts)
 	if err != nil && err != git.NoErrAlreadyUpToDate {
-		return fmt.Errorf("failed to push changes: %w", err)
+		return fmt.Errorf("failed to push changes: %w for repo %q", err, args.Path)
 	}
 
 	return nil
