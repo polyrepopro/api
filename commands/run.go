@@ -3,6 +3,7 @@ package commands
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"syscall"
@@ -32,6 +33,9 @@ func Run(ctx context.Context, label string, command config.Command, cwd string) 
 	}
 
 	cmd := exec.CommandContext(ctx, command.Command[0], command.Command[1:]...)
+	for k, v := range command.Env {
+		cmd.Env = append(os.Environ(), fmt.Sprintf("%s=%s", k, v))
+	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {

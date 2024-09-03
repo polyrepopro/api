@@ -52,10 +52,11 @@ const (
 )
 
 type Command struct {
-	Name        string   `yaml:"name" required:"true"`
-	Cwd         string   `yaml:"cwd" required:"false"`
-	ExitOnError bool     `yaml:"exitOnError" required:"false"`
-	Command     []string `yaml:"command" required:"true"`
+	Name        string            `yaml:"name" required:"true"`
+	Cwd         string            `yaml:"cwd" required:"false"`
+	ExitOnError bool              `yaml:"exitOnError" required:"false"`
+	Command     []string          `yaml:"command" required:"true"`
+	Env         map[string]string `yaml:"env" required:"false"`
 }
 
 type Hook struct {
