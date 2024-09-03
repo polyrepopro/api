@@ -20,7 +20,7 @@ type DefaultArgs struct {
 
 type Config struct {
 	Path       string       `yaml:"-"`
-	Current    string       `yaml:"current" required:"false"`
+	Default    string       `yaml:"default" required:"false"`
 	Synced     time.Time    `yaml:"synced" required:"false"`
 	Workspaces *[]Workspace `yaml:"workspaces" required:"false"`
 }

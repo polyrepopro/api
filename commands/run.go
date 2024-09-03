@@ -82,7 +82,7 @@ func Run(ctx context.Context, label string, command config.Command, cwd string) 
 			case <-ctx.Done():
 				return
 			default:
-				multilog.Info(label, "stderr", map[string]interface{}{
+				multilog.Error(label, "stderr", map[string]interface{}{
 					"name":   command.Name,
 					"output": scanner.Text(),
 				})
