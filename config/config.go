@@ -20,26 +20,27 @@ type DefaultArgs struct {
 
 type Config struct {
 	Path       string       `yaml:"-"`
+	URL        string       `yaml:"url" required:"false"`
 	Default    string       `yaml:"default" required:"false"`
 	Synced     time.Time    `yaml:"synced" required:"false"`
 	Workspaces *[]Workspace `yaml:"workspaces" required:"false"`
 }
 
-type Workspace struct {
-	Name         string        `yaml:"name"`
-	Path         string        `yaml:"path"`
-	Repositories *[]Repository `yaml:"repositories" required:"false"`
+type Defaults struct {
+	Workspace string   `yaml:"workspace" required:"false"`
+	Tags      []string `yaml:"tags" required:"false"`
 }
 
 type Repository struct {
-	Name    string    `yaml:"name"`
-	URL     string    `yaml:"url"`
-	Origin  string    `yaml:"origin,omitempty"`
-	Branch  string    `yaml:"branch,omitempty"`
-	Path    string    `yaml:"path"`
-	Auth    *Auth     `yaml:"auth,omitempty"`
-	Hooks   *[]Hook   `yaml:"hooks,omitempty"`
-	Runners *[]Runner `yaml:"runners,omitempty"`
+	Name    string    `yaml:"name" required:"true"`
+	URL     string    `yaml:"url" required:"true"`
+	Origin  string    `yaml:"origin,omitempty" required:"false"`
+	Branch  string    `yaml:"branch,omitempty" required:"false"`
+	Path    string    `yaml:"path" required:"true"`
+	Auth    *Auth     `yaml:"auth,omitempty" required:"false"`
+	Hooks   *[]Hook   `yaml:"hooks,omitempty" required:"false"`
+	Runners *[]Runner `yaml:"runners,omitempty" required:"false"`
+	Tags    []string  `yaml:"tags,omitempty" required:"false"`
 }
 
 type HookType string
@@ -85,6 +86,24 @@ type Auth struct {
 type AuthEnv struct {
 	Username string `yaml:"username,omitempty"`
 	Password string `yaml:"password,omitempty"`
+}
+
+func (c *Config) GetWorkspaces(names []string) (*[]Workspace, error) {
+	if len(*c.Workspaces) == 0 {
+		return nil, fmt.Errorf("no workspaces found in config")
+	}
+	if len(names) == 0 {
+		return c.Workspaces, nil
+	}
+	var workspaces []Workspace
+	for _, name := range names {
+		workspace, err := c.GetWorkspace(name)
+		if err != nil {
+			return nil, err
+		}
+		workspaces = append(workspaces, *workspace)
+	}
+	return &workspaces, nil
 }
 
 // SaveConfig saves the config to the path specified by the config.

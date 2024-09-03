@@ -13,14 +13,14 @@ import (
 	"github.com/polyrepopro/api/config"
 )
 
-func Run(ctx context.Context, label string, command config.Command, cwd string) *os.Process {
+func Run(ctx context.Context, label string, command config.Command, cwd string) error {
 	if command.Cwd != "" {
 		if err := os.Chdir(files.ExpandPath(command.Cwd)); err != nil {
 			multilog.Error(label, "failed to change directory", map[string]interface{}{
 				"command": command,
 				"error":   err,
 			})
-			return nil
+			return err
 		}
 	} else if cwd != "" {
 		if err := os.Chdir(files.ExpandPath(cwd)); err != nil {
@@ -28,7 +28,7 @@ func Run(ctx context.Context, label string, command config.Command, cwd string) 
 				"command": command,
 				"error":   err,
 			})
-			return nil
+			return err
 		}
 	}
 
@@ -45,7 +45,7 @@ func Run(ctx context.Context, label string, command config.Command, cwd string) 
 			"command": command,
 			"error":   err,
 		})
-		return nil
+		return err
 	}
 
 	stderr, err := cmd.StderrPipe()
@@ -54,7 +54,7 @@ func Run(ctx context.Context, label string, command config.Command, cwd string) 
 			"command": command,
 			"error":   err,
 		})
-		return nil
+		return err
 	}
 
 	err = cmd.Start()
@@ -63,7 +63,7 @@ func Run(ctx context.Context, label string, command config.Command, cwd string) 
 			"name":  command.Name,
 			"error": err,
 		})
-		return nil
+		return err
 	}
 
 	go func() {
@@ -101,5 +101,5 @@ func Run(ctx context.Context, label string, command config.Command, cwd string) 
 		syscall.Kill(cmd.Process.Pid, syscall.SIGKILL)
 	}()
 
-	return cmd.Process
+	return cmd.Wait()
 }

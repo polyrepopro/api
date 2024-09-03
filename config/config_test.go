@@ -39,13 +39,13 @@ func (s *TestSuite) Test2GetRelativeConfig() {
 }
 
 func (s *TestSuite) Test3GetConfigWithPath() {
-	config, err := GetConfig(&s.path)
+	config, err := GetConfig(s.path)
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), files.ExpandPath(s.path), config.Path)
 }
 
 func (s *TestSuite) Test4GetConfigWithoutPath() {
-	config, err := GetConfig(nil)
+	config, err := GetConfig("")
 	assert.NoError(s.T(), err)
 	assert.Equal(s.T(), files.ExpandPath(s.path), config.Path)
 }

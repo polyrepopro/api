@@ -9,7 +9,7 @@ import (
 
 func Run(ctx context.Context, hook *config.Hook) error {
 	for _, command := range hook.Commands {
-		if err := commands.Run(ctx, command, command.Cwd); err != nil {
+		if err := commands.Run(ctx, command.Name, command, command.Cwd); err != nil {
 			return err
 		}
 	}
