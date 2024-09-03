@@ -48,20 +48,23 @@ func Watch(ctx context.Context, label string, workspacePath string, runner confi
 						return nil
 					}
 
-					matched, err := regexp.MatchString(matcher.Ignore, path)
-					if err != nil {
-						multilog.Fatal(label, "failed to match path", map[string]interface{}{
-							"path":    path,
-							"error":   err,
-							"pattern": matcher.Ignore,
-						})
-						return err
-					}
-					if matched {
-						return nil
+					ignore := false
+					if matcher.Ignore != "" {
+						matched, err := regexp.MatchString(matcher.Ignore, path)
+						if err != nil {
+							multilog.Fatal(label, "failed to match path", map[string]interface{}{
+								"path":    path,
+								"error":   err,
+								"pattern": matcher.Ignore,
+							})
+							return err
+						}
+						if matched {
+							ignore = true
+						}
 					}
 
-					matched, err = regexp.MatchString(matcher.Include, path)
+					matched, err := regexp.MatchString(matcher.Include, path)
 					if err != nil {
 						multilog.Fatal(label, "failed to match path", map[string]interface{}{
 							"path":    path,
@@ -70,9 +73,10 @@ func Watch(ctx context.Context, label string, workspacePath string, runner confi
 						})
 						return err
 					}
-					if matched {
+					if matched && !ignore {
 						matches = append(matches, path)
 					}
+
 					return nil
 				})
 				if err != nil {
@@ -84,6 +88,7 @@ func Watch(ctx context.Context, label string, workspacePath string, runner confi
 			}
 
 			for _, match := range matches {
+
 				err = watcher.Add(match)
 				if err != nil {
 					multilog.Fatal(label, "failed to add path to watcher", map[string]interface{}{

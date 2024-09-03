@@ -3,7 +3,6 @@ package commands
 import (
 	"testing"
 
-	"github.com/polyrepopro/api/commands"
 	"github.com/polyrepopro/api/config"
 	"github.com/polyrepopro/api/test"
 )
