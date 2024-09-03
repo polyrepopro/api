@@ -2,8 +2,9 @@ package commands
 
 import (
 	"context"
+	"io/fs"
 	"path/filepath"
-	"time"
+	"regexp"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/mateothegreat/go-multilog/multilog"
@@ -11,100 +12,122 @@ import (
 	"github.com/polyrepopro/api/config"
 )
 
-func Watch(watch config.Watch) {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		multilog.Fatal("commands.watch", "failed to create watcher", map[string]interface{}{
-			"error": err,
-		})
-	}
-	defer watcher.Close()
-
-	var ctx context.Context
-	var cancel context.CancelFunc
-	ctx, cancel = context.WithCancel(context.Background())
-	defer cancel()
-
-	for _, path := range watch.Paths {
-		if watch.Cwd != "" {
-			path = filepath.Join(watch.Cwd, path)
-		}
-
-		matches, err := filepath.Glob(files.ExpandPath(path))
+func Watch(ctx context.Context, label string, workspacePath string, runner config.Runner) {
+	for {
+		watcher, err := fsnotify.NewWatcher()
 		if err != nil {
-			multilog.Fatal("commands.watch", "failed to glob path", map[string]interface{}{
-				"path":  path,
+			multilog.Fatal(label, "failed to create watcher", map[string]interface{}{
 				"error": err,
 			})
+			return
 		}
 
-		for _, match := range matches {
-			err = watcher.Add(match)
-			if err != nil {
-				multilog.Fatal("commands.watch", "failed to add path to watcher", map[string]interface{}{
-					"path":  match,
-					"error": err,
-				})
+		for _, command := range runner.Commands {
+			var c context.Context
+			var cancel context.CancelFunc
+
+			var base string
+			if runner.Cwd != "" {
+				base = files.ExpandPath(filepath.Join(workspacePath, runner.Cwd))
+			} else {
+				base = files.ExpandPath(filepath.Join(workspacePath, command.Cwd))
 			}
-		}
 
-		multilog.Debug("commands.watch", "added path to watcher", map[string]interface{}{
-			"path": path,
-		})
+			var matches []string
+			for _, matcher := range runner.Matchers {
+				path := matcher.Path
+				if path == "" {
+					path = command.Cwd
+				}
 
-		go func(path string) {
-			for {
-				select {
-				case event, ok := <-watcher.Events:
-					if !ok {
-						return
+				err := filepath.WalkDir(filepath.Join(base, path), func(path string, d fs.DirEntry, err error) error {
+					if err != nil {
+						return err
 					}
-					if event.Op&fsnotify.Write == fsnotify.Write {
-						multilog.Info("commands.watch", "file changed", map[string]interface{}{
-							"path": event.Name,
+					if d.IsDir() {
+						return nil
+					}
+
+					matched, err := regexp.MatchString(matcher.Ignore, path)
+					if err != nil {
+						multilog.Fatal(label, "failed to match path", map[string]interface{}{
+							"path":    path,
+							"error":   err,
+							"pattern": matcher.Ignore,
 						})
-						cancel()
-						ctx.Done()
-						// Allow the OS time to catch up with the process being killed.
-						time.Sleep(100 * time.Millisecond)
-						ctx, cancel = RestartCommands(watch.Commands, files.ExpandPath(watch.Cwd))
+						return err
 					}
-				case err, ok := <-watcher.Errors:
-					if !ok {
-						return
+					if matched {
+						return nil
 					}
-					multilog.Error("commands.watch", "watcher error", map[string]interface{}{
+
+					matched, err = regexp.MatchString(matcher.Include, path)
+					if err != nil {
+						multilog.Fatal(label, "failed to match path", map[string]interface{}{
+							"path":    path,
+							"error":   err,
+							"pattern": matcher.Include,
+						})
+						return err
+					}
+					if matched {
+						matches = append(matches, path)
+					}
+					return nil
+				})
+				if err != nil {
+					multilog.Fatal(label, "failed to walk path", map[string]interface{}{
+						"path":  path,
 						"error": err,
 					})
 				}
 			}
-		}(path)
-	}
 
-	ctx, cancel = RestartCommands(watch.Commands, watch.Cwd)
-
-	<-make(chan struct{})
-}
-
-func RestartCommands(commands []config.Command, cwd string) (context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithCancel(context.Background())
-
-	for _, command := range commands {
-		if command.Cwd != "" {
-			command.Cwd = files.ExpandPath(filepath.Join(cwd, command.Cwd))
-		}
-
-		go func(command config.Command) {
-			select {
-			case <-ctx.Done():
-				multilog.Info("commands.watch", "command execution cancelled via context", map[string]interface{}{
-					"command": command,
-				})
-				return
-			default:
-				Run(ctx, command, cwd)
+			for _, match := range matches {
+				err = watcher.Add(match)
+				if err != nil {
+					multilog.Fatal(label, "failed to add path to watcher", map[string]interface{}{
+						"path":  match,
+						"error": err,
+					})
+				}
 			}
-		}(command)
+
+			c, cancel = context.WithCancel(context.Background())
+			go func() {
+				for {
+					select {
+					case <-ctx.Done():
+						println("received sigterm, canceling context")
+						cancel()
+						return
+					case <-c.Done():
+						return
+					case event, ok := <-watcher.Events:
+						if !ok {
+							multilog.Fatal(label, "watcher events channel closed", nil)
+						}
+						if event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create || event.Op&fsnotify.Remove == fsnotify.Remove {
+							multilog.Info(label, "change detected", map[string]interface{}{
+								"path": event.Name,
+								"op":   event.Op,
+							})
+							cancel()
+						}
+					case err, ok := <-watcher.Errors:
+						if !ok {
+							multilog.Fatal(label, "watcher errors channel closed", nil)
+						}
+						multilog.Fatal(label, "watcher error", map[string]interface{}{
+							"error": err,
+						})
+						cancel()
+					}
+				}
+			}()
+			Run(c, label, command, base)
+			<-c.Done()
+			watcher.Close()
+		}
 	}
-	return ctx, cancel
 }

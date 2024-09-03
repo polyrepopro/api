@@ -32,14 +32,14 @@ type Workspace struct {
 }
 
 type Repository struct {
-	Name    string   `yaml:"name"`
-	URL     string   `yaml:"url"`
-	Origin  string   `yaml:"origin,omitempty"`
-	Branch  string   `yaml:"branch,omitempty"`
-	Path    string   `yaml:"path"`
-	Auth    *Auth    `yaml:"auth,omitempty"`
-	Hooks   *[]Hook  `yaml:"hooks,omitempty"`
-	Watches *[]Watch `yaml:"watches,omitempty"`
+	Name    string    `yaml:"name"`
+	URL     string    `yaml:"url"`
+	Origin  string    `yaml:"origin,omitempty"`
+	Branch  string    `yaml:"branch,omitempty"`
+	Path    string    `yaml:"path"`
+	Auth    *Auth     `yaml:"auth,omitempty"`
+	Hooks   *[]Hook   `yaml:"hooks,omitempty"`
+	Runners *[]Runner `yaml:"runners,omitempty"`
 }
 
 type HookType string
@@ -63,10 +63,17 @@ type Hook struct {
 	Commands []Command `yaml:"commands" required:"true"`
 }
 
-type Watch struct {
+type Runner struct {
 	Cwd      string    `yaml:"cwd" required:"false"`
-	Paths    []string  `yaml:"paths" required:"true"`
+	Watch    bool      `yaml:"watch" required:"false"`
+	Matchers []Matcher `yaml:"matchers" required:"false"`
 	Commands []Command `yaml:"commands" required:"true"`
+}
+
+type Matcher struct {
+	Path    string `yaml:"path" required:"true"`
+	Include string `yaml:"include" required:"false"`
+	Ignore  string `yaml:"ignore" required:"false"`
 }
 
 type Auth struct {
