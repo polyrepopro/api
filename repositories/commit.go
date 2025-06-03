@@ -17,8 +17,9 @@ type CommitArgs struct {
 
 func Commit(args CommitArgs) (*git.CommitResult, error) {
 	result, err := git.Commit(git.CommitArgs{
-		Path: files.ExpandPath(fmt.Sprintf("%s/%s", args.Workspace.Path, args.Repository.Path)),
-		Auth: args.Repository.Auth,
+		Path:    files.ExpandPath(fmt.Sprintf("%s/%s", args.Workspace.Path, args.Repository.Path)),
+		Auth:    args.Repository.Auth,
+		Message: args.Message,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to commit changes: %w", err)
