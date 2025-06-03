@@ -94,6 +94,8 @@ func (c *Config) GetWorkspaces(names []string) (*[]Workspace, error) {
 	}
 	if len(names) == 0 {
 		return c.Workspaces, nil
+	} else if len(names) == 1 && names[0] == "" {
+		return c.Workspaces, nil
 	}
 	var workspaces []Workspace
 	for _, name := range names {

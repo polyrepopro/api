@@ -11,6 +11,13 @@ type CommitArgs struct {
 	Message   string
 }
 
+// Commit commits the changes for each repository in the workspace.
+//
+// Arguments:
+//   - args: The arguments for the commit.
+//
+// Returns:
+//   - []git.CommitResult: The results of the commit.
 func Commit(args CommitArgs) ([]git.CommitResult, []error) {
 	var errors []error
 	var results []git.CommitResult
