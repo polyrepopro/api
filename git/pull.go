@@ -38,8 +38,8 @@ func Pull(args PullArgs) error {
 	opts := &git.PullOptions{
 		RemoteName:        args.Remote,
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
-		Progress:          &pullProgress{},
-		Force:             true, // Allow non-fast-forward updates
+		// Progress:          &pullProgress{},
+		Force: true, // Allow non-fast-forward updates
 	}
 
 	multilog.Debug("git.pull", "pulling", map[string]interface{}{

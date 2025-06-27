@@ -8,8 +8,8 @@ require (
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/mateothegreat/go-multilog v0.0.0-20240804220716-7ac35b2b2781
-	github.com/mateothegreat/go-util v0.0.0-20240812031932-d120d349cd20
-	github.com/stretchr/testify v1.9.0
+	github.com/mateothegreat/go-util v0.0.0-20250627204358-2b2112ad9ad4
+	github.com/stretchr/testify v1.10.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -22,7 +22,7 @@ require (
 	github.com/alecthomas/repr v0.0.0-20210801044451-80ca428c5142 // indirect
 	github.com/cloudflare/circl v1.3.9 // indirect
 	github.com/cyphar/filepath-securejoin v0.3.1 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/elastic/elastic-transport-go/v8 v8.6.0 // indirect
 	github.com/elastic/go-elasticsearch/v8 v8.14.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect

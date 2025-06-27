@@ -13,6 +13,7 @@ type PullArgs struct {
 	git.PullArgs
 	Workspace  *config.Workspace
 	Repository *config.Repository
+	Auth       *config.Auth
 }
 
 func Pull(args PullArgs) error {
@@ -22,6 +23,7 @@ func Pull(args PullArgs) error {
 
 	multilog.Debug("repositories.pull", "pulling repository", map[string]interface{}{
 		"repository": args.Repository,
+		"auth":       args.Auth,
 	})
 
 	stat, err := os.Stat(fmt.Sprintf("%s/%s/.git", args.Workspace.GetAbsolutePath(), args.Repository.Path))
@@ -34,6 +36,7 @@ func Pull(args PullArgs) error {
 		err = git.Clone(git.CloneArgs{
 			URL:  args.Repository.URL,
 			Path: fmt.Sprintf("%s/%s", args.Workspace.GetAbsolutePath(), args.Repository.Path),
+			Auth: args.Auth,
 		})
 		if err != nil {
 			multilog.Fatal("repositories.pull", "failed to clone repository", map[string]interface{}{
@@ -50,7 +53,7 @@ func Pull(args PullArgs) error {
 			Path:   fmt.Sprintf("%s/%s", args.Workspace.Path, args.Repository.Path),
 			Remote: args.Remote,
 			URL:    args.Repository.URL,
-			Auth:   args.Repository.Auth,
+			Auth:   args.Auth,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to pull remote %q: %w", args.Remote, err)

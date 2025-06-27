@@ -12,35 +12,41 @@ import (
 	"github.com/polyrepopro/api/config"
 )
 
+var defaultKeys = []string{
+	"~/.ssh/id_rsa",
+	"~/.ssh/id_ed25519",
+}
+
 func GetAuth(url string, auth *config.Auth) transport.AuthMethod {
 	if auth == nil && urls.GetProtocol(url) == "ssh" {
-		// Check if the default SSH key exists
-		defaultSSHKey := files.ExpandPath("~/.ssh/id_rsa")
-		if _, err := os.Stat(defaultSSHKey); err == nil {
-			// Default SSH key exists, use it
-			sshAuth, err := ssh.NewPublicKeysFromFile("git", defaultSSHKey, "")
-			if err != nil {
-				multilog.Fatal("git.getauth", "failed to create SSH auth with default key", map[string]interface{}{
-					"error": err.Error(),
+		for _, key := range defaultKeys {
+			defaultSSHKey := files.ExpandPath(key)
+			if _, err := os.Stat(defaultSSHKey); err == nil {
+				// Default SSH key exists, use it
+				sshAuth, err := ssh.NewPublicKeysFromFile("git", defaultSSHKey, "")
+				if err != nil {
+					multilog.Fatal("git.getauth", "failed to create SSH auth with default key", map[string]interface{}{
+						"error": err.Error(),
+					})
+					return nil
+				}
+
+				multilog.Debug("auth", "using default SSH key", map[string]interface{}{
+					"publicKey": defaultSSHKey,
+					"url":       url,
 				})
-				return nil
+
+				return sshAuth
+			} else {
+				// Default SSH key doesn't exist, proceed without auth
+				multilog.Fatal("git.getauth", "no auth provided and default SSH key not found", map[string]interface{}{
+					"path": defaultSSHKey,
+				})
 			}
-
-			multilog.Debug("auth", "using default SSH key", map[string]interface{}{
-				"publicKey": defaultSSHKey,
-				"url":       url,
-			})
-
-			return sshAuth
-		} else {
-			// Default SSH key doesn't exist, proceed without auth
-			multilog.Fatal("git.getauth", "no auth provided and default SSH key not found", map[string]interface{}{
-				"path": defaultSSHKey,
-			})
 		}
 	} else if auth != nil && auth.Key != "" {
 		// Use SSH key
-		sshAuth, err := ssh.NewPublicKeysFromFile("git", auth.Key, "")
+		sshAuth, err := ssh.NewPublicKeysFromFile("git", files.ExpandPath(auth.Key), "")
 		if err != nil {
 			multilog.Fatal("git.clone", "failed to create SSH auth with provided key", map[string]interface{}{
 				"error": err.Error(),

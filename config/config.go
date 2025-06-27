@@ -14,23 +14,28 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// DefaultArgs are the default arguments for the config.
 type DefaultArgs struct {
 	Config string
 }
 
+// Config is the main config for the application.
 type Config struct {
 	Path       string       `yaml:"-"`
 	URL        string       `yaml:"url" required:"false"`
 	Default    string       `yaml:"default" required:"false"`
 	Synced     time.Time    `yaml:"synced" required:"false"`
+	Auth       *Auth        `yaml:"auth,omitempty" required:"false"`
 	Workspaces *[]Workspace `yaml:"workspaces" required:"false"`
 }
 
+// Defaults are the default values for the config.
 type Defaults struct {
 	Workspace string   `yaml:"workspace" required:"false"`
 	Tags      []string `yaml:"tags" required:"false"`
 }
 
+// Repository is a repository in a workspace.
 type Repository struct {
 	Name    string    `yaml:"name" required:"true"`
 	URL     string    `yaml:"url" required:"true"`
@@ -43,15 +48,21 @@ type Repository struct {
 	Tags    []string  `yaml:"tags,omitempty" required:"false"`
 }
 
+// HookType is the type of hook.
 type HookType string
 
 const (
-	CloneHook   HookType = "clone"
-	PullHook    HookType = "pull"
-	PushHook    HookType = "push"
+	// CloneHook is a hook that is run when a repository is cloned.
+	CloneHook HookType = "clone"
+	// PullHook is a hook that is run when a repository is pulled.
+	PullHook HookType = "pull"
+	// PushHook is a hook that is run when a repository is pushed.
+	PushHook HookType = "push"
+	// PrePushHook is a hook that is run when a repository is pushed.
 	PrePushHook HookType = "pre_push"
 )
 
+// Command is a command to run.
 type Command struct {
 	Name        string            `yaml:"name" required:"true"`
 	Cwd         string            `yaml:"cwd" required:"false"`
@@ -60,11 +71,13 @@ type Command struct {
 	Env         map[string]string `yaml:"env" required:"false"`
 }
 
+// Hook is a hook to run.
 type Hook struct {
 	Type     HookType  `yaml:"type" required:"true"`
 	Commands []Command `yaml:"commands" required:"true"`
 }
 
+// Runner is a runner to run.
 type Runner struct {
 	Cwd      string    `yaml:"cwd" required:"false"`
 	Watch    bool      `yaml:"watch" required:"false"`
@@ -72,22 +85,32 @@ type Runner struct {
 	Commands []Command `yaml:"commands" required:"true"`
 }
 
+// Matcher is a matcher to match.
 type Matcher struct {
 	Path    string `yaml:"path" required:"true"`
 	Include string `yaml:"include" required:"false"`
 	Ignore  string `yaml:"ignore" required:"false"`
 }
 
+// Auth is the authentication for the config.
 type Auth struct {
 	Key string  `yaml:"key,omitempty" required:"false"`
 	Env AuthEnv `yaml:"env,omitempty" required:"false"`
 }
 
+// AuthEnv is the environment variables for the authentication.
 type AuthEnv struct {
 	Username string `yaml:"username,omitempty"`
 	Password string `yaml:"password,omitempty"`
 }
 
+// GetWorkspaces returns the workspaces for the config.
+//
+// Arguments:
+//   - names: The names of the workspaces to get.
+//
+// Returns:
+//   - *[]Workspace: The workspaces.
 func (c *Config) GetWorkspaces(names []string) (*[]Workspace, error) {
 	if len(*c.Workspaces) == 0 {
 		return nil, fmt.Errorf("no workspaces found in config")
