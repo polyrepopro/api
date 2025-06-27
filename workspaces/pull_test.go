@@ -23,7 +23,7 @@ func (s *PullSuite) SetupTest() {
 	test.Setup()
 
 	var err error
-	s.cfg, err = config.GetAbsoluteConfig("~/.polyrepo.yaml")
+	s.cfg, err = config.GetAbsoluteConfig("~/workspace/cmskit.orig/workspace/.polyrepo.yaml")
 	if err != nil {
 		log.Fatalf("failed to get absolute config: %v", err)
 	}

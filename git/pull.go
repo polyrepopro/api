@@ -42,6 +42,13 @@ func Pull(args PullArgs) error {
 		Force:             true, // Allow non-fast-forward updates
 	}
 
+	multilog.Debug("git.pull", "pulling", map[string]interface{}{
+		"url":    args.URL,
+		"remote": args.Remote,
+		"path":   args.Path,
+		"auth":   args.Auth,
+	})
+
 	auth := GetAuth(args.URL, args.Auth)
 	if auth.Name() != "" {
 		opts.Auth = auth
