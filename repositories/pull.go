@@ -26,12 +26,9 @@ func Pull(args PullArgs) error {
 
 	stat, err := os.Stat(fmt.Sprintf("%s/%s/.git", args.Workspace.GetAbsolutePath(), args.Repository.Path))
 	if os.IsNotExist(err) || !stat.IsDir() {
-		fmt.Printf("stat: %+v\n", stat)
 		multilog.Info("repositories.pull", "repository not found, cloning", map[string]interface{}{
-			"repository": args.Repository,
-			"path":       fmt.Sprintf("%s/%s", args.Workspace.GetAbsolutePath(), args.Repository.Path),
-			"url":        args.Repository.URL,
-			"root":       args.Workspace.GetAbsolutePath(),
+			"path": fmt.Sprintf("%s/%s", args.Workspace.GetAbsolutePath(), args.Repository.Path),
+			"url":  args.Repository.URL,
 		})
 
 		err = git.Clone(git.CloneArgs{

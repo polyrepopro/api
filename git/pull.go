@@ -46,7 +46,6 @@ func Pull(args PullArgs) error {
 		"url":    args.URL,
 		"remote": args.Remote,
 		"path":   args.Path,
-		"auth":   args.Auth,
 	})
 
 	auth := GetAuth(args.URL, args.Auth)

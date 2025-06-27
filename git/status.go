@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/mateothegreat/go-multilog/multilog"
 )
 
 // Status retrieves the git status for the repository at the specified path.
@@ -40,6 +41,14 @@ func Status(path string) (git.Status, error) {
 			// Git command says clean, return empty status
 			return git.Status{}, nil
 		}
+
+		multilog.Warn("git.status", "resorted to git command directly", map[string]interface{}{
+			"path":    path,
+			"status":  status,
+			"output":  string(output),
+			"gitErr":  gitErr,
+			"command": cmd.String(),
+		})
 	}
 
 	return status, nil
