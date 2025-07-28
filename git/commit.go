@@ -105,23 +105,27 @@ func GetGitUser(path string) (*object.Signature, error) {
 // Returns:
 // - []gitignore.Pattern: the parsed gitignore patterns
 // - error: any error encountered while reading or parsing the .gitignore file
-func AddGitignoreToWorktree(wt *git.Worktree, path string) ([]gitignore.Pattern, error) {
-	if !files.FileExists(filepath.Join(path, ".gitignore")) {
-		return nil, nil
-	}
+func AddGitignoreToWorktree(paths ...string) ([]gitignore.Pattern, error) {
+	patterns := make([]gitignore.Pattern, 0)
 
-	f, err := os.Open(filepath.Join(path, ".gitignore"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to read .gitignore: %w", err)
-	}
-	defer f.Close()
+	for _, path := range paths {
+		if !files.FileExists(filepath.Join(path, ".gitignore")) {
+			return nil, nil
+		}
 
-	fileScanner := bufio.NewScanner(f)
-	fileScanner.Split(bufio.ScanLines)
+		f, err := os.Open(filepath.Join(path, ".gitignore"))
+		if err != nil {
+			return nil, fmt.Errorf("failed to read .gitignore: %w", err)
+		}
+		defer f.Close()
 
-	var patterns []gitignore.Pattern
-	for fileScanner.Scan() {
-		patterns = append(patterns, gitignore.ParsePattern(fileScanner.Text(), nil))
+		fileScanner := bufio.NewScanner(f)
+		fileScanner.Split(bufio.ScanLines)
+
+		for fileScanner.Scan() {
+			patterns = append(patterns, gitignore.ParsePattern(fileScanner.Text(), nil))
+		}
+
 	}
 
 	return patterns, nil
@@ -151,7 +155,7 @@ func Commit(args CommitArgs) (*CommitResult, error) {
 		return result, fmt.Errorf("failed to get worktree: %w", err)
 	}
 
-	patterns, err := AddGitignoreToWorktree(worktree, args.Path)
+	patterns, err := AddGitignoreToWorktree(args.Path)
 	if err != nil {
 		return result, fmt.Errorf("failed to add gitignore to worktree: %w", err)
 	}

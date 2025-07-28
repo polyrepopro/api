@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/polyrepopro/api/config"
+	"github.com/polyrepopro/api/git"
 	"github.com/polyrepopro/api/repositories"
 )
 
@@ -20,6 +21,9 @@ func Push(args PushArgs) []error {
 		go func() {
 			defer wg.Done()
 			err := repositories.Push(repositories.PushArgs{
+				PushArgs: git.PushArgs{
+					Remote: repo.Origin,
+				},
 				Workspace:  args.Workspace,
 				Repository: &repo,
 			})
