@@ -5,11 +5,13 @@ go 1.22.0
 require (
 	github.com/alecthomas/assert v1.0.0
 	github.com/fsnotify/fsnotify v1.7.0
+	github.com/go-git/go-billy/v5 v5.5.0
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/mateothegreat/go-multilog v0.0.0-20240804220716-7ac35b2b2781
 	github.com/mateothegreat/go-util v0.0.0-20250627204358-2b2112ad9ad4
 	github.com/stretchr/testify v1.10.0
+	golang.org/x/crypto v0.25.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -28,7 +30,6 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
-	github.com/go-git/go-billy/v5 v5.5.0 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -45,7 +46,6 @@ require (
 	go.opentelemetry.io/otel v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
-	golang.org/x/crypto v0.25.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
