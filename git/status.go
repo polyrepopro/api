@@ -13,8 +13,8 @@ import (
 
 // BranchStatus represents the relationship between local and remote branches
 type BranchStatus struct {
-	Behind int  // Number of commits behind remote
-	Ahead  int  // Number of commits ahead of remote  
+	Behind    int  // Number of commits behind remote
+	Ahead     int  // Number of commits ahead of remote
 	NeedsPush bool // Local has commits that need to be pushed
 	NeedsPull bool // Remote has commits that need to be pulled
 }
@@ -49,24 +49,6 @@ func Status(path string) (git.Status, error) {
 	status, err := worktree.Status()
 	if err != nil {
 		return git.Status{}, err
-	}
-
-	// Verification: check with git command if the library reports dirty but git says clean
-	if len(status) > 0 {
-		cmd := exec.Command("git", "-C", path, "status", "--porcelain")
-		output, gitErr := cmd.Output()
-		if gitErr == nil && len(strings.TrimSpace(string(output))) == 0 {
-			// Git command says clean, return empty status
-			return git.Status{}, nil
-		}
-
-		multilog.Warn("git.status", "resorted to git command directly", map[string]interface{}{
-			"path":    path,
-			"status":  status,
-			"output":  string(output),
-			"gitErr":  gitErr,
-			"command": cmd.String(),
-		})
 	}
 
 	return status, nil
@@ -195,19 +177,19 @@ func countCommitsBetween(repo *git.Repository, from, to plumbing.Hash) (int, err
 	if err != nil {
 		return 0, err
 	}
-	
+
 	// Use git command to count commits between references
 	cmd := exec.Command("git", "-C", worktree.Filesystem.Root(), "rev-list", "--count", fmt.Sprintf("%s..%s", from.String(), to.String()))
 	output, err := cmd.Output()
 	if err != nil {
 		return 0, err
 	}
-	
+
 	countStr := strings.TrimSpace(string(output))
 	if countStr == "" {
 		return 0, nil
 	}
-	
+
 	count := 0
 	_, err = fmt.Sscanf(countStr, "%d", &count)
 	return count, err
@@ -219,19 +201,19 @@ func countCommitsFromRef(repo *git.Repository, hash plumbing.Hash) (int, error) 
 	if err != nil {
 		return 0, err
 	}
-	
+
 	// Use git command to count total commits from reference
 	cmd := exec.Command("git", "-C", worktree.Filesystem.Root(), "rev-list", "--count", hash.String())
 	output, err := cmd.Output()
 	if err != nil {
 		return 0, err
 	}
-	
+
 	countStr := strings.TrimSpace(string(output))
 	if countStr == "" {
 		return 0, nil
 	}
-	
+
 	count := 0
 	_, err = fmt.Sscanf(countStr, "%d", &count)
 	return count, err
